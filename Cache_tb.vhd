@@ -13,7 +13,7 @@ architecture bench of Cache_tb is
   	address: in std_logic_vector (15 downto 0);
   	wdata : in std_logic_vector (15 downto 0);
   	data : out std_logic_vector (15 downto 0);
-  	hit : out std_logic
+  	hit0 , hit1 : out std_logic
   	);
   end component;
 
@@ -21,7 +21,7 @@ architecture bench of Cache_tb is
   signal address: std_logic_vector (15 downto 0);
   signal wdata: std_logic_vector (15 downto 0);
   signal data: std_logic_vector (15 downto 0);
-  signal hit: std_logic ;
+  signal hit0 ,hit1 : std_logic ;
   
 	constant clock_period: time := 10 ns;
 	signal stop_the_clock: boolean;
@@ -34,7 +34,8 @@ begin
                         address => address,
                         wdata   => wdata,
                         data    => data,
-                        hit     => hit );
+                        hit0    => hit0,
+						hit1    => hit1);
 
   stimulus: process
   begin

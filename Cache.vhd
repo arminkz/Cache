@@ -8,7 +8,7 @@ entity Cache is
 	address: in std_logic_vector (15 downto 0);
 	wdata : in std_logic_vector (15 downto 0);
 	data : out std_logic_vector (15 downto 0);
-	hit : out std_logic
+	hit0 , hit1 : out std_logic
 	);
 end entity;
 
@@ -56,8 +56,7 @@ architecture behavioral of Cache is
 	-- Tag / Valid Outputs
 	signal TV0_out , TV1_out : std_logic_vector(4 downto 0);
 	
-	signal hitR : std_logic;
-	signal hit0 , hit1 : std_logic;
+	signal hitR , hitR0 , hitR1 : std_logic;
 	signal reset_n , invalidate : std_logic;
 	
 	-- FSM
@@ -78,10 +77,11 @@ begin
 	 
 	MHL : MHLogic port map (CacheTag,TV0_out,TV1_out,hitR,hit0,hit1);
 	
-	data <= DA0_out when hit0 = '1' else
-			DA1_out when hit1 = '1' else
+	data <= DA0_out when hitR0 = '1' else
+			DA1_out when hitR1 = '1' else
 			(others => 'Z');
 			
-	hit <= hitR;
+	hit0 <= hitR0;
+	hit1 <= hitR1;
 	
 end architecture;
