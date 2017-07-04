@@ -75,7 +75,7 @@ begin
 	Way0TV : TVArray port map (clk,reset_n,CacheAddress,wen0,invalidate,CacheTag,TV0_out);
 	Way1TV : TVArray port map (clk,reset_n,CacheAddress,wen1,invalidate,CacheTag,TV1_out);
 	 
-	MHL : MHLogic port map (CacheTag,TV0_out,TV1_out,hitR,hit0,hit1);
+	MHL : MHLogic port map (CacheTag,TV0_out,TV1_out,hitR,hitR0,hitR1);
 	
 	data <= DA0_out when hitR0 = '1' else
 			DA1_out when hitR1 = '1' else

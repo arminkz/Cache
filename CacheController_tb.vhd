@@ -38,12 +38,12 @@ begin
   
     -- Put initialisation code here
 	address <= "0000000000000001";
-	data <= "0000000000000101";
-	writemem <= '1';
+	readmem <= '1';
+	writemem <= '0';
 
     -- Put test bench stimulus code here
 
-    stop_the_clock <= true;
+    --stop_the_clock <= true;
     wait;
   end process;
 

@@ -30,44 +30,65 @@ architecture behavioral of CacheController is
 	end component;
 	
 	signal readRAM , writeRAM , writeCache0 , writeCache1 : std_logic;
-	signal dataCache : std_logic_vector (15 downto 0);
-	signal dataRAM : std_logic_vector (15 downto 0);
+	
+	
+	signal outFromCache : std_logic;
+	signal outFromRAM : std_logic;
+	
+	signal forwardToRAM : std_logic;
+	signal forwardToCache : std_logic;
+	signal RamToCache : std_logic;
+	
 	signal dataWriteCache : std_logic_vector (15 downto 0);
+	signal dataRAM : std_logic_vector (15 downto 0);
+	
+	signal cacheOut : std_logic_vector (15 downto 0);
+	
 	signal cacheHit0 , cacheHit1 : std_logic;
+	signal RamDataReady : std_logic;
 	signal MRU : std_logic := '0' ; 
 	
 	-- FSM
 	type state_type is (reset, st1, st2);
 	signal cur_state : state_type := reset;
+	signal next_state : state_type;
 	
 begin
 
-	MainMemory : RAM port map (clk,readRAM,writeRAM,address,dataRAM,memdataready);
-	CacheMemory : Cache port map(clk,writeCache0,writeCache1,address,dataWriteCache,dataCache,cacheHit0,cacheHit1);
+	MainMemory : RAM port map (clk,readRAM,writeRAM,address,dataRAM,RamDataReady);
+	CacheMemory : Cache port map(clk,writeCache0,writeCache1,address,dataWriteCache,cacheOut,cacheHit0,cacheHit1);
+	
+	data <= cacheOut when outFromCache = '1' else
+			dataRAM when outFromRAM = '1' else
+			(others => 'Z');
+			
+	dataRAM <= data when forwardToRAM = '1' else
+			   (others => 'Z');
+			   
+	dataWriteCache <= data when forwardToCache = '1' else
+				 dataRAM when RamToCache = '1' else
+			     (others => 'Z');
 	
 	process (clk)
 	begin
 		
-		
-		
 		if rising_edge(clk) then
-		
-			readRAM <= '0';
-			writeRAM <= '0';
-			writeCache0 <= '0';
-			writeCache1 <= '0';
-			dataRAM <= (others => 'Z');
-			memdataready <= '0';
 		
 			case cur_state is
 				
 				when reset =>
+				
 					readRAM <= '0';
 					writeRAM <= '0';
 					writeCache0 <= '0';
 					writeCache1 <= '0';
-					dataRAM <= (others => 'Z');
 					memdataready <= '0';
+					outFromCache <= '0';
+					outFromRAM <= '0';
+					forwardToRAM <= '0';
+					forwardToCache <= '0';
+					RamToCache <= '0';
+					
 					cur_state <= st1;
 			
 				-- STATE 1 (MAIN)
@@ -76,13 +97,13 @@ begin
 					if readmem = '1' then
 					
 						if (cacheHit0 = '1') or (cacheHit1 = '1') then
-							data <= dataCache;
+							outFromCache <= '1';
 							if(cacheHit0 = '1') then
 								MRU <= '0';
 							elsif (cacheHit1 = '1') then
 								MRU <= '1';
 							end if;
-							cur_state <= st1; 
+							cur_state <= reset; 
 						else
 							readRAM <= '1';
 							cur_state <= st2;
@@ -91,10 +112,11 @@ begin
 					elsif writemem = '1' then
 					
 						-- write to RAM
-						dataRAM <= data;
+						forwardToRAM <= '1';
 						writeRAM <= '1';
+						
 						-- write to Cache
-						dataWriteCache <= data;
+						forwardToCache <= '1';
 						if MRU = '0' then
 							writeCache0 <= '1';
 						end if;
@@ -102,16 +124,18 @@ begin
 							writeCache1 <= '1';
 						end if;
 						
-						cur_state <= st1;
+						cur_state <= reset;
+						
+						report "MADAR GHAHBE";
 						
 					end if;
 				
 				-- STATE 2 (MISS)
 				when st2 =>
 				
-					data <= dataRAM;
+					outFromRAM <= '1';
 					memdataready <= '1';
-					dataWriteCache <= dataRAM;
+					RamToCache <= '1';
 					
 					-- write to cache based on MRU
 					if MRU = '0' then
@@ -121,7 +145,7 @@ begin
 						writeCache1 <= '1';
 					end if;
 					
-					cur_state <= st1;
+					cur_state <= reset;
 			end case;
 		end if;
 	end process;
