@@ -126,8 +126,6 @@ begin
 						
 						cur_state <= reset;
 						
-						report "MADAR GHAHBE";
-						
 					end if;
 				
 				-- STATE 2 (MISS)
