@@ -38,8 +38,9 @@ begin
   
     -- Put initialisation code here
 	address <= "0000000000000001";
-	readmem <= '1';
-	writemem <= '0';
+	data <= "0000000000000101";
+	readmem <= '0';
+	writemem <= '1';
 
     -- Put test bench stimulus code here
 
